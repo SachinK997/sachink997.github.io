@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co;">
+    <title>FreshFit | Analytics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon"></div>
+                Freshfit
+            </div>
+
+            <div class="user-profile">
+                <div class="user-info">
+                    <h3>Alex Fitness</h3>
+                    <p>Free Plan</p>
+                </div>
+            </div>
+
+            <nav class="side-nav">
+                <a href="index.html">📅 Calendar</a>
+                <a href="analytics.html" class="active">📊 Analytics</a>
+            </nav>
+
+            <div class="weekly-goal" style="margin-top: auto;">
+                <h4 style="color: var(--accent-primary); margin-bottom: 0;">Data Overview</h4>
+                <p style="margin-top: 0.5rem; opacity: 1;">Explore your historical performance.</p>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="top-nav" style="margin-bottom: 2rem;">
+                <div class="date-selector">
+                    <h2>Performance Dashboard</h2>
+                </div>
+            </div>
+
+            <!-- Stats with Comparisons -->
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2.5rem;">
+                <div
+                    style="background: var(--bg-main); padding: 1.5rem; border-radius: var(--border-radius-md); border: 1px solid var(--border-color);">
+                    <p
+                        style="color: var(--text-muted); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem;">
+                        Activities</p>
+                    <div style="display: flex; align-items: baseline; gap: 0.75rem;">
+                        <h3 id="statTotalActs" style="font-size: 2.5rem; color: var(--accent-primary);">0</h3>
+                        <span id="compareActs" style="font-size: 0.85rem; font-weight: 700;"></span>
+                    </div>
+                </div>
+                <div
+                    style="background: var(--bg-main); padding: 1.5rem; border-radius: var(--border-radius-md); border: 1px solid var(--border-color);">
+                    <p
+                        style="color: var(--text-muted); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem;">
+                        Time Logged</p>
+                    <div style="display: flex; align-items: baseline; gap: 0.75rem;">
+                        <h3 id="statTotalTime" style="font-size: 2.5rem; color: #3b82f6;">0h</h3>
+                        <span id="compareTime" style="font-size: 0.85rem; font-weight: 700;"></span>
+                    </div>
+                </div>
+                <div
+                    style="background: var(--bg-main); padding: 1.5rem; border-radius: var(--border-radius-md); border: 1px solid var(--border-color);">
+                    <p
+                        style="color: var(--text-muted); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem;">
+                        Nutrition Points</p>
+                    <div style="display: flex; align-items: baseline; gap: 0.75rem;">
+                        <h3 id="statNutrition" style="font-size: 2.5rem; color: #f59e0b;">0</h3>
+                        <span id="compareNutrition" style="font-size: 0.85rem; font-weight: 700;"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Consistency Chart & Monthly Goal -->
+            <div style="display: grid; grid-template-columns: 2.5fr 1fr; gap: 1.5rem; margin-bottom: 2.5rem;">
+                <div
+                    style="background: var(--bg-main); padding: 1.5rem; border-radius: var(--border-radius-md); border: 1px solid var(--border-color);">
+                    <h3 style="margin-bottom: 1.5rem; font-size: 1.1rem; color: var(--text-dark);">Consistency (Last 30 Days)</h3>
+                    <div style="height: 300px; width: 100%;">
+                        <canvas id="consistencyChart"></canvas>
+                    </div>
+                </div>
+
+                <div
+                    style="background: var(--bg-main); padding: 1.5rem; border-radius: var(--border-radius-md); border: 1px solid var(--border-color); text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                    <h3 style="margin-bottom: 1.5rem; font-size: 1.1rem; color: var(--text-dark);">Monthly Goal</h3>
+                    
+                    <div style="position: relative; width: 140px; height: 140px; margin-bottom: 1.5rem;">
+                        <svg viewBox="0 0 36 36" style="width: 140px; height: 140px; transform: rotate(-90deg);">
+                            <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="3" />
+                            <path id="goalProgressCircle" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                fill="none" stroke="var(--accent-primary)" stroke-width="3" stroke-dasharray="0, 100" stroke-linecap="round" />
+                        </svg>
+                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+                            <span id="goalPercentText" style="font-size: 1.5rem; font-weight: 800; display: block; line-height: 1;">0%</span>
+                        </div>
+                    </div>
+                    <p id="goalTargetText" style="font-size: 0.9rem; color: var(--text-muted); font-weight: 600;">0 / 20 Workouts</p>
+                </div>
+            </div>
+
+            <!-- Milestone Badges -->
+            <div style="background: var(--bg-main); padding: 1.5rem; border-radius: var(--border-radius-md); border: 1px solid var(--border-color); margin-bottom: 2.5rem;">
+                <h3 style="margin-bottom: 1.5rem; font-size: 1.1rem; color: var(--text-dark);">Milestone Badges</h3>
+                <div id="badgeContainer" style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
+                    <!-- Badges injected here -->
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 2fr 1.2fr; gap: 1.5rem; min-height: 400px;">
+                <div
+                    style="background: var(--bg-main); padding: 1.5rem; border-radius: var(--border-radius-md); border: 1px solid var(--border-color); display: flex; flex-direction: column;">
+                    <h3 style="margin-bottom: 1rem; font-size: 1.2rem;">Activity Category Breakdown</h3>
+                    <div
+                        style="flex: 1; display: flex; align-items: center; justify-content: center; min-height: 250px;">
+                        <div style="width: 85%; height: 85%; position: relative;">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    style="background: var(--bg-main); padding: 1.5rem; border-radius: var(--border-radius-md); border: 1px solid var(--border-color); overflow-y: auto;">
+                    <h3 style="margin-bottom: 1rem; font-size: 1.2rem;">Recent Logs</h3>
+                    <div id="recentLogsContainer" style="display: flex; flex-direction: column; gap: 1rem;">
+                        <!-- Recent items injected here via JS -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="analytics.js"></script>
+</body>
+
+</html>
